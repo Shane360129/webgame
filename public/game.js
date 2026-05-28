@@ -67,10 +67,10 @@ const MIN_WIDTH = 6;
 function baseWidth() { return Math.min(W * 0.62, 300); }
 function floorY()    { return H - FLOOR_INSET; }
 function targetActiveY() { return H * ACTIVE_TARGET_FRAC; }
-function speedFor(level) {
-  const base = W * 0.45;
-  const inc  = level * (W * 0.018);
-  return Math.min(W * 1.25, base + inc);
+function periodFor(level) {
+  // Smooth pendulum: one full swing (left → right → left) in this many seconds.
+  // Starts gentle, gets quicker per level; clamped so it stays playable.
+  return Math.max(0.85, 3.0 - level * 0.045);
 }
 function colorFor(level) {
   const hue = (state.baseHue + level * 9) % 360;
@@ -163,21 +163,40 @@ function startGame() {
 function spawnActive(width) {
   const level = state.blocks.length;
   const fromLeft = level % 2 === 1;
-  const x = fromLeft ? 0 : Math.max(0, W - width);
+  const period = periodFor(level);
+  const span = Math.max(0, (W - width) / 2);
+  // Pendulum: x(t) = span * (1 + side * cos(omega * t))
+  //   side = -1 → starts at left edge (cos(0)=1 → x=0), swings right
+  //   side = +1 → starts at right edge → swings left
   state.active = {
-    x,
     width,
     color: colorFor(level),
     level,
-    dir: fromLeft ? 1 : -1,
-    speed: speedFor(level),
+    omega: (Math.PI * 2) / period,
+    side: fromLeft ? -1 : 1,
+    t0: performance.now(),
+    x: fromLeft ? 0 : Math.max(0, W - width),
   };
+}
+
+function activeXAt(a, nowMs) {
+  const t = (nowMs - a.t0) / 1000;
+  const span = Math.max(0, (W - a.width) / 2);
+  let x = span * (1 + a.side * Math.cos(a.omega * t));
+  if (x < 0) x = 0;
+  const maxX = Math.max(0, W - a.width);
+  if (x > maxX) x = maxX;
+  return x;
 }
 
 function drop() {
   if (state.mode !== 'playing' || !state.active) return;
-  const prev = state.blocks[state.blocks.length - 1];
   const cur = state.active;
+  // Snap to the precise position at THIS instant so the drop matches what the
+  // player saw at the moment of input — no perceived lag from frame timing.
+  cur.x = activeXAt(cur, performance.now());
+
+  const prev = state.blocks[state.blocks.length - 1];
   const left  = Math.max(cur.x, prev.x);
   const right = Math.min(cur.x + cur.width, prev.x + prev.width);
   const overlap = right - left;
@@ -273,13 +292,9 @@ function update(dt) {
   const desired = Math.max(0, targetActiveY() - (floorY() - activeLevel * BLOCK_H));
   state.cameraOffset += (desired - state.cameraOffset) * Math.min(1, dt * 8);
 
-  // moving active block
+  // moving active block — sinusoidal pendulum, position is a pure function of time
   if (state.mode === 'playing' && state.active) {
-    const a = state.active;
-    a.x += a.dir * a.speed * dt;
-    if (a.x <= 0) { a.x = 0; a.dir = 1; }
-    const maxX = Math.max(0, W - a.width);
-    if (a.x >= maxX) { a.x = maxX; a.dir = -1; }
+    state.active.x = activeXAt(state.active, performance.now());
   }
 
   // falling debris
@@ -475,10 +490,12 @@ function onPrimary() {
 }
 
 canvas.addEventListener('pointerdown', (e) => {
+  // Fire the drop FIRST (synchronous) so input → action has no overhead;
+  // audio unlock runs right after — it doesn't block the game logic.
   e.preventDefault();
-  audio.ensure();
   onPrimary();
-});
+  audio.ensure();
+}, { passive: false });
 
 window.addEventListener('keydown', (e) => {
   const isEnter = e.code === 'Enter';
