@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>雲端疊大樓 ☁️🏙️</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏙️</text></svg>" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- ===== Game area ===== -->
+    <main class="stage">
+      <div class="canvas-wrap">
+        <canvas id="game"></canvas>
+
+        <!-- In-game HUD -->
+        <div class="hud" id="hud" hidden>
+          <div class="hud-score" id="hudScore">0</div>
+          <div class="hud-combo" id="hudCombo"></div>
+        </div>
+
+        <button class="icon-btn mute-btn" id="muteBtn" title="音效開關" aria-label="音效開關">🔊</button>
+
+        <!-- Start overlay -->
+        <div class="overlay" id="startScreen">
+          <div class="panel">
+            <h1 class="title">雲端疊大樓</h1>
+            <p class="subtitle">點擊 / 空白鍵，把樓層疊到最高！</p>
+            <label class="field">
+              <span>你的名字</span>
+              <input id="nameInput" type="text" maxlength="16" placeholder="輸入暱稱" autocomplete="off" />
+            </label>
+            <button class="btn primary" id="startBtn">開始遊戲</button>
+            <ul class="howto">
+              <li>🟦 方塊會左右移動，<b>點擊畫面或按空白鍵</b>放下</li>
+              <li>✂️ 沒對齊的部分會被切掉，方塊越疊越窄</li>
+              <li>🎯 完美對齊可<b>加分、回血變寬</b>並累積連擊</li>
+              <li>🏆 結束後分數自動上傳<b>共享排行榜</b></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Game over overlay -->
+        <div class="overlay" id="overScreen" hidden>
+          <div class="panel">
+            <h2 class="over-title">遊戲結束</h2>
+            <div class="final-score">
+              <span class="final-num" id="finalScore">0</span>
+              <span class="final-label">層</span>
+            </div>
+            <div class="rank-line" id="rankLine">上傳中…</div>
+            <button class="btn primary" id="againBtn">再玩一次</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ===== Sidebar ===== -->
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark">🏙️</span>
+        <div>
+          <div class="brand-name">雲端疊大樓</div>
+          <div class="online" id="onlineBox"><span class="dot"></span><span id="onlineCount">—</span> 人在線上</div>
+        </div>
+      </div>
+
+      <section class="card">
+        <h3>🏆 排行榜 Top 10</h3>
+        <ol class="leaderboard" id="leaderboard">
+          <li class="lb-empty">載入中…</li>
+        </ol>
+      </section>
+
+      <section class="card">
+        <h3>📣 最新動態</h3>
+        <ul class="activity" id="activity">
+          <li class="act-empty">等待玩家上傳分數…</li>
+        </ul>
+      </section>
+
+      <p class="conn" id="connStatus">連線中…</p>
+    </aside>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>

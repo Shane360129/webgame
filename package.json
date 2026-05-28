@@ -1,0 +1,19 @@
+{
+  "name": "cloud-tower-stack",
+  "version": "1.0.0",
+  "description": "雲端疊大樓 — 多人線上疊高樓遊戲，含共享排行榜",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^11.8.1",
+    "express": "^4.21.2",
+    "ws": "^8.18.0"
+  }
+}
