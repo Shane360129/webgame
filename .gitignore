@@ -5,3 +5,6 @@ data/
 .env
 .idea/
 .vscode/
+
+# three.js 由 npm postinstall 複製進來，不進版本控制
+public/vendor/

@@ -1,11 +1,6 @@
 node_modules
 data
 .git
-.gitignore
-.dockerignore
-Dockerfile
-README.md
 *.log
 .DS_Store
-.idea
-.vscode
+tests

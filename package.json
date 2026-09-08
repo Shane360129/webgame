@@ -1,11 +1,16 @@
 {
-  "name": "cloud-tower-stack",
-  "version": "1.0.0",
-  "description": "雲端疊大樓 — 多人線上疊高樓遊戲，含共享排行榜",
+  "name": "royale-arena-3d",
+  "version": "2.0.0",
+  "type": "module",
+  "description": "3D 即時卡牌對戰重製原型（非官方粉絲專案，未附帶任何 Supercell 素材）",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "vendor": "node scripts/vendor-three.js",
+    "test": "node --test \"tests/*.test.js\"",
+    "audit:data": "node scripts/audit-data.js",
+    "postinstall": "node scripts/vendor-three.js"
   },
   "engines": {
     "node": ">=20"
@@ -14,6 +19,7 @@
   "dependencies": {
     "better-sqlite3": "^11.8.1",
     "express": "^4.21.2",
+    "three": "^0.185.1",
     "ws": "^8.18.0"
   }
 }

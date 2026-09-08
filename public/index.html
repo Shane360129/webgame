@@ -1,91 +1,229 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#0f172a" />
-  <title>雲端疊大樓 ☁️🏙️</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏙️</text></svg>" />
-  <link rel="stylesheet" href="style.css" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0d1220">
+<title>皇室對戰式 3D 重製原型</title>
+<link rel="stylesheet" href="./css/app.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>👑</text></svg>">
 </head>
 <body>
-  <div class="app">
-    <!-- ===== Game area ===== -->
-    <main class="stage">
-      <div class="canvas-wrap">
-        <canvas id="game"></canvas>
 
-        <!-- In-game HUD -->
-        <div class="hud" id="hud" hidden>
-          <div class="hud-score" id="hudScore">0</div>
-          <div class="hud-combo" id="hudCombo"></div>
-        </div>
+<div id="app">
 
-        <button class="icon-btn mute-btn" id="muteBtn" title="音效開關" aria-label="音效開關">🔊</button>
-
-        <!-- Start overlay -->
-        <div class="overlay" id="startScreen">
-          <div class="panel">
-            <h1 class="title">雲端疊大樓</h1>
-            <p class="subtitle">點擊 / 空白鍵，把樓層疊到最高！</p>
-            <label class="field">
-              <span>你的名字</span>
-              <input id="nameInput" type="text" maxlength="16" placeholder="輸入暱稱" autocomplete="off" />
-            </label>
-            <button class="btn primary" id="startBtn">開始遊戲</button>
-            <ul class="howto">
-              <li>🟦 方塊會左右移動，<b>點擊畫面或按空白鍵</b>放下</li>
-              <li>✂️ 沒對齊的部分會被切掉，方塊越疊越窄</li>
-              <li>🎯 完美對齊可<b>加分、回血變寬</b>並累積連擊</li>
-              <li>🏆 結束後分數自動上傳<b>共享排行榜</b></li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Game over overlay -->
-        <div class="overlay" id="overScreen" hidden>
-          <div class="panel">
-            <h2 class="over-title">遊戲結束</h2>
-            <div class="final-score">
-              <span class="final-num" id="finalScore">0</span>
-              <span class="final-label">層</span>
-            </div>
-            <div class="rank-line" id="rankLine">上傳中…</div>
-            <button class="btn primary" id="againBtn">再玩一次</button>
-          </div>
+  <!-- ─────────── 首頁 ─────────── -->
+  <section class="screen" id="screen-home" data-screen="home">
+    <header class="topbar">
+      <div class="profile">
+        <div class="avatar" id="home-avatar">👑</div>
+        <div class="profile-text">
+          <input id="player-name" maxlength="16" placeholder="玩家名稱" autocomplete="off">
+          <div class="profile-sub"><span id="home-arena">競技場 0</span></div>
         </div>
       </div>
-    </main>
+      <div class="trophy-chip"><span class="ico">🏆</span><b id="home-trophies">0</b></div>
+      <div class="gold-chip"><span class="ico">🪙</span><b id="home-gold">0</b></div>
+    </header>
 
-    <!-- ===== Sidebar ===== -->
-    <aside class="sidebar">
-      <div class="brand">
-        <span class="brand-mark">🏙️</span>
-        <div>
-          <div class="brand-name">雲端疊大樓</div>
-          <div class="online" id="onlineBox"><span class="dot"></span><span id="onlineCount">—</span> 人在線上</div>
+    <div class="scroll">
+      <div class="notice unofficial">
+        <b>非官方粉絲重製原型</b>
+        本專案與 Supercell 無關聯，未取得授權，且<b>不含任何官方模型、貼圖、音效或介面素材</b>。
+        場上所有角色皆為本專案以程式化幾何原創建模。
+        <a href="#" data-goto="audit">看資料查核與缺口 →</a>
+      </div>
+
+      <div class="card-panel">
+        <h2>對戰</h2>
+        <div class="mode-grid">
+          <button class="mode-btn primary" id="btn-online">
+            <span class="mode-title">線上對戰</span>
+            <span class="mode-sub">伺服器權威模擬 · 真人配對</span>
+            <span class="mode-meta" id="online-meta">線上 0 人</span>
+          </button>
+          <button class="mode-btn" id="btn-practice">
+            <span class="mode-title">AI 練習</span>
+            <span class="mode-sub">在本機跑同一份模擬器</span>
+            <span class="mode-meta">對手標示為電腦，不計入排行</span>
+          </button>
+        </div>
+        <label class="row-field">
+          <span>AI 難度</span>
+          <select id="ai-difficulty">
+            <option value="easy">簡單</option>
+            <option value="normal" selected>普通</option>
+            <option value="hard">困難</option>
+          </select>
+        </label>
+        <label class="row-field">
+          <span>鏡頭版本</span>
+          <select id="camera-mode">
+            <option value="classic">原作式固定視角</option>
+            <option value="orbit">可旋轉視角</option>
+            <option value="spectator">近距離觀戰</option>
+          </select>
+        </label>
+        <label class="row-field">
+          <span>畫質</span>
+          <select id="quality">
+            <option value="high">高</option>
+            <option value="medium" selected>中</option>
+            <option value="low">低</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="card-panel">
+        <h2>寶箱格</h2>
+        <div class="chest-slots" id="chest-slots"></div>
+        <p class="hint">寶箱依箱種、競技場、已解鎖卡池與保底規則開出，不是單一均勻亂數。</p>
+      </div>
+
+      <div class="card-panel">
+        <h2>獎盃榜</h2>
+        <ol class="leaderboard" id="leaderboard"></ol>
+        <h3>最近對戰</h3>
+        <ul class="recent" id="recent-matches"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── 卡組 ─────────── -->
+  <section class="screen" id="screen-deck" data-screen="deck" hidden>
+    <header class="topbar"><h1>卡組</h1><div class="spacer"></div><button class="ghost" id="deck-save">儲存</button></header>
+    <div class="scroll">
+      <div class="card-panel">
+        <h2>一般卡槽 <span class="tag">8</span></h2>
+        <div class="deck-grid" id="deck-grid"></div>
+      </div>
+      <div class="card-panel">
+        <h2>進化卡槽 <span class="tag">2</span></h2>
+        <p class="hint">只有具備進化型態的卡可放入。需在對戰中循環指定次數後才會以進化型態出牌。</p>
+        <div class="evo-row" id="evo-row"></div>
+      </div>
+      <div class="card-panel">
+        <h2>冠軍卡槽 <span class="tag">1</span></h2>
+        <p class="hint">冠軍不佔一般 8 格，另有主動技能與額外聖水成本。</p>
+        <div class="champ-row" id="champ-row"></div>
+      </div>
+      <div class="card-panel">
+        <h2>塔兵</h2>
+        <p class="hint">塔兵替換公主塔，獨立於一般部署卡。</p>
+        <div class="tower-row" id="tower-row"></div>
+      </div>
+      <div class="card-panel">
+        <h2>收藏 <span class="tag" id="collection-count">0</span></h2>
+        <div class="filter-row" id="collection-filters">
+          <button class="chip active" data-filter="all">全部</button>
+          <button class="chip" data-filter="troop">部隊</button>
+          <button class="chip" data-filter="building">建築</button>
+          <button class="chip" data-filter="spell">法術</button>
+          <button class="chip" data-filter="evolution">可進化</button>
+        </div>
+        <div class="collection" id="collection"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── 寶箱 ─────────── -->
+  <section class="screen" id="screen-chests" data-screen="chests" hidden>
+    <header class="topbar"><h1>寶箱</h1></header>
+    <div class="scroll">
+      <div class="notice">
+        本頁機率表是<b>本專案自訂的可運作模型</b>，<code>version_date</code> 為 null、全部標記未驗證。
+        這不是官方掉落率；驗證器只回報加總偏差，<b>不會</b>自動把數字改成看起來合理的值。
+      </div>
+      <div id="chest-list"></div>
+      <div class="card-panel">
+        <h2>機率表自檢</h2>
+        <div class="table-wrap"><table id="chest-validation"></table></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── 資料查核 ─────────── -->
+  <section class="screen" id="screen-audit" data-screen="audit" hidden>
+    <header class="topbar"><h1>資料查核</h1></header>
+    <div class="scroll" id="audit-body"></div>
+  </section>
+
+  <!-- ─────────── 對戰 ─────────── -->
+  <section class="screen battle" id="screen-battle" data-screen="battle" hidden>
+    <canvas id="arena"></canvas>
+
+    <div class="hud">
+      <div class="hud-top">
+        <div class="side-info enemy">
+          <span class="name" id="enemy-name">對手</span>
+          <span class="badge ai" id="enemy-ai" hidden>電腦對手（AI）</span>
+          <span class="badge warn" id="enemy-disconnected" hidden>對手斷線中</span>
+        </div>
+        <div class="clock">
+          <div class="crowns"><span id="crown-me">0</span> <span class="vs">👑</span> <span id="crown-you">0</span></div>
+          <div class="time" id="battle-time">3:00</div>
+          <div class="phase" id="battle-phase">聖水 x1</div>
+        </div>
+        <button class="ghost small" id="btn-leave">離開</button>
+      </div>
+
+      <div class="tower-bars" id="tower-bars"></div>
+
+      <div class="hud-mid">
+        <div class="banner" id="battle-banner" hidden></div>
+      </div>
+
+      <div class="hud-bottom">
+        <div class="left-rail">
+          <button class="rail-btn" id="btn-champion" hidden></button>
+          <button class="rail-btn" id="btn-ability" hidden></button>
+          <div class="next-card" id="next-card"><span class="label">下一張</span></div>
+        </div>
+        <div class="hand-area">
+          <div class="elixir-bar" id="elixir-bar">
+            <div class="elixir-fill" id="elixir-fill"></div>
+            <div class="elixir-pips" id="elixir-pips"></div>
+            <div class="elixir-count" id="elixir-count">5</div>
+          </div>
+          <div class="hand" id="hand"></div>
         </div>
       </div>
 
-      <section class="card">
-        <h3>🏆 排行榜 Top 10</h3>
-        <ol class="leaderboard" id="leaderboard">
-          <li class="lb-empty">載入中…</li>
-        </ol>
-      </section>
+      <div class="perf" id="perf"></div>
+    </div>
 
-      <section class="card">
-        <h3>📣 最新動態</h3>
-        <ul class="activity" id="activity">
-          <li class="act-empty">等待玩家上傳分數…</li>
-        </ul>
-      </section>
+    <div class="result-overlay" id="result-overlay" hidden>
+      <div class="result-card">
+        <h2 id="result-title">勝利</h2>
+        <p id="result-reason"></p>
+        <div class="result-stats" id="result-stats"></div>
+        <button class="primary" id="result-close">返回</button>
+      </div>
+    </div>
 
-      <p class="conn" id="connStatus">連線中…</p>
-    </aside>
+    <div class="queue-overlay" id="queue-overlay" hidden>
+      <div class="queue-card">
+        <div class="spinner"></div>
+        <h2 id="queue-title">配對中…</h2>
+        <p id="queue-sub">等待另一位真人玩家。超過 12 秒會提供標示清楚的 AI 對手。</p>
+        <button class="ghost" id="queue-cancel">取消</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────── 卡片詳情 ─────────── -->
+  <div class="sheet" id="card-sheet" hidden>
+    <div class="sheet-inner" id="card-sheet-inner"></div>
   </div>
 
-  <script src="game.js"></script>
+  <nav class="bottom-nav" id="bottom-nav">
+    <button data-goto="deck"><span>🃏</span>卡組</button>
+    <button class="active" data-goto="home"><span>⚔️</span>對戰</button>
+    <button data-goto="chests"><span>🎁</span>寶箱</button>
+    <button data-goto="audit"><span>📋</span>資料</button>
+  </nav>
+</div>
+
+<script type="module" src="./js/main.js"></script>
 </body>
 </html>
